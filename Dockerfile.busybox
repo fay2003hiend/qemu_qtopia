@@ -1,0 +1,32 @@
+FROM nbp_toolchain
+
+WORKDIR /root
+
+RUN wget http://busybox.net/downloads/busybox-1.26.2.tar.bz2
+RUN tar jxf busybox-1.26.2.tar.bz2
+
+WORKDIR /root/busybox-1.26.2
+ENV PATH="/opt/arm-2014.05/bin:${PATH}"
+ENV CROSS_COMPILE arm-none-linux-gnueabi-
+ENV LDFLAGS --static
+
+RUN mkdir -p /root/busybox-inst
+RUN make defconfig O=/root/busybox-inst
+RUN make -j 8 O=/root/busybox-inst
+
+WORKDIR /root/busybox-inst
+RUN make install
+
+WORKDIR /root/busybox-inst/_install
+
+RUN mkdir -p bin etc/init.d dev dev/pts lib proc sys tmp
+RUN echo root:x:0:0:root:/:/bin/sh > etc/passwd
+RUN echo root:x:0: > etc/group
+
+RUN echo '#!/bin/ash\n\
+mount -t proc none /proc\n\
+mount -t sysfs none /sys\n\
+mdev -s\n' > etc/init.d/rcS
+RUN chmod +x etc/init.d/rcS
+
+RUN find . | cpio -H newc -o | gzip > /root/busybox-inst/initrd.gz

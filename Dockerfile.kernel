@@ -1,0 +1,15 @@
+FROM nbp_toolchain
+
+WORKDIR /root
+
+RUN wget https://cdn.kernel.org/pub/linux/kernel/v3.x/linux-3.2.88.tar.xz
+RUN tar xf linux-3.2.88.tar.xz
+
+WORKDIR /root/linux-3.2.88
+
+ENV PATH="/opt/arm-2014.05/bin:${PATH}"
+ENV CROSS_COMPILE arm-none-linux-gnueabi-
+ENV ARCH arm
+
+RUN make vexpress_defconfig
+RUN make -j 8
