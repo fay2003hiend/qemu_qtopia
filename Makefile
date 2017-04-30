@@ -1,5 +1,11 @@
 DOCKER_VOLUME_ARGS:=-v ${CURDIR}:/opt/host_dir
 
+ifeq ($(OS),Windows_NT)
+	DOCKER_CLEAN:=for /f %%i in ('docker images -q -f "dangling=true"') do docker rmi -f %%i
+else
+	DOCKER_CLEAN:=for i in `docker images -q -f "dangling=true"`; do docker rmi -f $$i; done
+endif
+
 toolchain:
 	-mkdir build
 	docker build -f Dockerfile.toolchain . -t qemu_qtopia_toolchain
@@ -33,4 +39,5 @@ all: kernel bash busybox qtextended
 	echo done
 
 docker_clean:
-	for /f %%i in ('docker images -q -f "dangling=true"') do docker rmi -f %%i
+	$(DOCKER_CLEAN)
+
