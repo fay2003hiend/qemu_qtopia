@@ -1,4 +1,4 @@
-FROM nbp_toolchain
+FROM qemu_qtopia_toolchain
 
 WORKDIR /root
 
